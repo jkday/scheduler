@@ -1,0 +1,57 @@
+<div id='main' style='height:90%;width:100%;background-color:red'>
+    <div id='top' style="width:100%">
+        <h1>
+            <%= title %>
+
+        </h1>
+    </div>
+
+    <div class='content'>
+        <div id='left' class="panel" style='background-color:green;float:left;height:100%;width:75%'>
+            <h2 style="margin:0 0 0 5px">Use Date selector on the right to add a new appointment</h2>
+            Search current appointments by user:
+            <div>Username: <input type="text">
+                <div class='button'>Submit</div>
+            </div>
+            <p>
+                Search appointments by Date & Time:
+                <div>Username: <input type="text">
+                    <div class='button'>Submit</div>
+                </div>
+            </p>
+            <p>
+                Search all appointments between two dates:
+                <div style="display:inline-block">
+                    <div style="display:inline-block">Username: <input type="text">
+                        <div class='button'>Submit</div>
+                    </div>
+                    <div style="display:inline-block">Username: <input type="text">
+                        <div class='button'>Submit</div>
+                    </div>
+                </div>
+            </p>
+            <div class='modal' id='add_appt_form' style="background-color: white;display:none;">
+                <!--  <link rel="import" href="views/appt_form.html">-->
+                <!-- <script type="text/javascript" src="appt_form.js"></script>-->
+            </div>
+        </div>
+        <div id="navi" class="panel" style='background-color:white;height:100%;'>
+
+            <h2 style="margin:0 0 0 5px;">Select date to schedule next appointment</h2>
+            Date: <input type="text" id="datepicker">
+            <div id='appt_add_btn' class='button'>Make Appointment</div>
+
+        </div>
+    </div>
+
+    <div id="bottom" class="panel bottom" style='width:100%;background-color:blue'>
+        bottom
+    </div>
+
+</div>
+
+<!--
+<p>Welcome to
+    <%= title %>
+</p>
+-->
