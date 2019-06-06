@@ -42,13 +42,31 @@ app.use(express.json({ type: 'application/json' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-var db = mongoose.connect("mongodb://localhost:27017/test", { useNewUrlParser: true }).then(() => {
-    console.log("Successfully connected to the database");
-}).catch(err => {
-    console.error('Could not connect to the database. Exiting now...', err);
-    //process.exit();
-});
+var db = {};
+var connect2DB = function(db, retries) {
 
+    var attempt = retries || 1;
+    //    db = mongoose.connect("mongodb://localhost:27017/db", { useNewUrlParser: true }).then(() => {
+
+    db = mongoose.connect("mongodb://localhost:27017/test", { useNewUrlParser: true }).then(() => {
+        console.log("Successfully connected to the database");
+    }).catch(err => {
+
+        if (attempt <= 3) {
+            console.error(`Could not connect to the database on attempt ${attempt} of 3.\n Retrying shortly... \n${err}`);
+            attempt++;
+            setTimeout(() => { let j = 1 + 1 }, 500); //give the MongoDB a chance to start up (.5 sec pause)
+            connect2DB(db, attempt);
+            return;
+        } else {
+            //exit the entire node app if a connection cannot be made to DB
+            console.error('Could not connect to the database. Exiting now...', err);
+            process.exit();
+        }
+    });
+
+};
+connect2DB(db);
 
 /*
 app.use(session({
@@ -59,8 +77,14 @@ app.use(session({
     */
 
 app.get('/', indexRouter);
+app.get('/apptList', function(req, res) {
+
+    res.render('apptList', { title: "Appointment Results" });
+
+});
+
 app.all('/users', usersRouter);
-app.all('/scheduler', scheduleRouter);
+app.all('/scheduler(/*)?', scheduleRouter);
 
 
 // static file viewer... remove later

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        <%= title %>
+    </title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="API/JQuery/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="javascripts/utils.js"></script>
+
+    <!-- NOTE: This page assumes the global variable window.aList is set! -->
+</head>
+
+<body>
+    <h1>Appointment List</h1>
+    <p>Result of DB Query</p>
+    <div float='left'>
+        <div style="width:250;height:250;"><a id='backBtn' href='/'>Main Page</a></div>
+    </div>
+    <div id="appts">
+
+    </div>
+    <!-- photos DIV-->
+    <script>
+        $(function() {
+            setInterval(1000, function() {
+                let a = 1 + 1;
+            });
+
+            /********UPDATE Appointment Handler *********/
+            var updateAppt = function(event) {
+                console.log(event.data.listingID)
+
+                /*get all text based data from an appointment*/
+                var formInputs = $("#" + event.data.listingID).find("h3");
+
+                var apptInfo = {};
+                infoPairs = formInputs.text().split('\n');
+                //console.log(infoPairs)
+
+                infoPairs.forEach((line, ind) => {
+                    //don't update native DB attributes
+                    if (line.indexOf('_') == 0 || line.indexOf('createdAt') !=-1 || line.indexOf('updatedAt')!= -1 ) { 
+                        return; //stop processing this line item
+                    }
+                    let [key, val] = line.split(":");
+                    if(val){
+                          apptInfo[key] = val.trim();
+                    }
+                });
+                /*get all input-based data from an appointment*/
+                formInputs = $("#" + event.data.listingID).find("input").each(function(){
+                    apptInfo[this.name] = new String(this.value).trim();
+                });
+
+
+
+                console.log(apptInfo)
+                apptInfo['apptID'] = apptInfo['apptID'].trim();
+                var uri = '/scheduler/'+ apptInfo['apptID'];
+                    
+                         $.ajax({
+                             url: uri,
+                             type: 'PUT',
+                             data: apptInfo,
+                             success: function(response) {
+                                 alert('Appointment Update Sent');
+                                 $('#'+event.data.listingID).css("display", "none");
+                                 console.log("Response: ", response);
+                             },
+                             error: function(xhr, status, error) {
+                                 console.error("Appt Update Error: " + status);
+                                 console.error("PUT Error:", error);
+                                 //console.error("PUT Error:", xhr.responseText);
+                                 console.error("PUT Error:", xhr.responseJSON.message);
+
+
+                             alert('Problem updating appointment check error logs');
+                                }
+                         
+                         });
+            };
+
+             /********DELETE Appointment Handler *********/
+
+            var deleteAppt = function(event) {
+                     /*get all text based data from an appointment*/
+                var formInputs = $("#" + event.data.listingID).find("h3");
+
+                var apptInfo = {};
+                infoPairs = formInputs.text().split('\n');
+                //console.log(infoPairs)
+
+                infoPairs.forEach((line, ind) => {
+                    //don't update native DB attributes
+                    if (line.indexOf('_') == 0 || line.indexOf('createdAt') !=-1 || line.indexOf('updatedAt')!= -1 ) { 
+                        return; //stop processing this line item
+                    }
+                    let [key, val] = line.split(":");
+                    if(val){
+                          apptInfo[key] = val.trim();
+                    }
+                });
+                /*get all input-based data from an appointment*/
+                formInputs = $("#" + event.data.listingID).find("input").each(function(){
+                    apptInfo[this.name] = new String(this.value).trim();
+                });
+
+console.log(apptInfo);
+               // var query = {'apptID': apptInfo['apptID']};
+                var uri = "/scheduler/"+ apptInfo['apptID'];
+                
+                         $.ajax({
+                             url: uri,
+                             type: 'DELETE',
+                             //data: apptInfo,
+                             success: function(response) {
+                                 alert('Appointment delete request sent');
+                                 $('#'+event.data.listingID).css("display", "none");
+                                 console.log("Response: ", response);
+                             },
+                             error: function(xhr, status, error) {
+                                 console.error("Appt Delete Error: " + status);
+                                 console.error("DELETE Error:", error);
+                                 //console.error("PUT Error:", xhr.responseText);
+                                 console.error("DELETE Error:", xhr.responseJSON.message);
+
+
+                             alert('Problem deleting appointment check error logs');
+                                }
+                         
+                         });
+
+            };
+
+
+            window.aList.forEach(function(appt, ind) {
+                var divName = "apptListing" + ind;
+                var htmlStr = '<div id="' + divName + '" class="apptDetails"><hr> <h2>' + appt.customerName + ": " + appt.date + " @ " + appt.tod + '</h2>';
+                htmlStr += '<h3>';
+                for (var attr in appt) {
+                    if (attr.indexOf('apptID') == 0 || attr.indexOf('_') == 0 || attr.indexOf('createdAt') !=-1 ||attr.indexOf('updatedAt')!= -1 ) { //don't show DB attributes
+                        htmlStr += "<br>" + attr + ": " + appt[attr] + "\n";
+                    } else {
+                        htmlStr += '<br>' + attr + ': <input class="apptDetails" id="'+ divName+'_'+attr +'" type="text" name="'+attr+'" value="'+ appt[attr] + '">\n';
+
+                    }
+                }
+                htmlStr += '</h3>';
+
+                var apptToolBar = '<div style="display:inline-block"><div id="appt_add_btn" class="button" style="display:inline-block">Update</div> \
+            <div id="appt_add_btn" class="button" style="display:inline-block">Delete Appointment</div></div>';
+                htmlStr += apptToolBar + '<hr></div>';
+
+
+                $('#appts').append(htmlStr);
+                var btns = $('#' + divName).find(".button");
+               // console.log(btns)
+
+                for (var j = 0; j < btns.length; j++) {
+                    console.log(btns.eq(j).text())
+                    if (btns.eq(j).text() == "Update") {
+                        btns.eq(j).on('click', {
+                            listingID: divName
+                        }, updateAppt);
+                    } else if (btns.eq(j).text() == "Delete Appointment") {
+                        btns.eq(j).on('click', {
+                            listingID: divName
+                        },deleteAppt);
+
+                    }
+
+                }
+
+            }); //endof forEach
+
+
+        });
+    </script>
+</body>
+
+</html>

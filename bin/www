@@ -5,8 +5,62 @@
  */
 
 var app = require('../app');
-var debug = require('debug')('scheduler:server');
+var debug = require('debug')('app:server');
 var http = require('http');
+
+
+
+/* Handle signal interupt to shutdown both the app & the mongoDB server! */
+if (process.platform === "win32") {
+    var rl = require("readline").createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    rl.on("SIGINT", function() {
+        process.emit("SIGINT");
+    });
+}
+
+//graceful shutdown
+process.on("SIGINT", function() {
+    //shutdown monogDB server 1st
+    end_dbPipe(dbChildProc);
+    //shutdown node app next
+    console.error("Shutting down node app...");
+    process.exit();
+
+});
+
+/*start MongoDB before launching app*/
+
+const spawn = require('child_process').spawn;
+//const pipe = spawn('mongod', ['--dbpath=<LOCATION>', '--port', '<PORT>'])
+const dbChildProc = spawn('mongod', ['--dbpath=c:\\data\\test', '--port', '27017']);
+//Docker
+//const dbChildProc = spawn('mongod', ['--dbpath=/data/db', '--port', '27017', '--bind_ip_all']);
+
+dbChildProc.stdout.on('data', function(data) {
+    //console.log(data.toString('utf8'));
+    console.log(data.toString());
+});
+
+dbChildProc.stderr.on('data', (data) => {
+    //console.log(data.toString('utf8'));
+    console.log(data.toString());
+});
+
+dbChildProc.on('exit', (code, signal) => {
+    console.log(`Process exited with code:  ${code} from signal: ${signal}`);
+    process.exit();
+});
+
+function end_dbPipe(childProcess) {
+    console.error("Shutting down MongoDB server...");
+    childProcess.kill('SIGINT');
+}
+
+setTimeout(() => { let j = 1 + 1 }, 2000); //give the MongoDB a chance to start up (2sec pause)
 
 /**
  * Get port from environment and store in Express.
@@ -86,5 +140,5 @@ function onListening() {
     var bind = typeof addr === 'string' ?
         'pipe ' + addr :
         'port ' + addr.port;
-    debug('Listening on ' + bind);
+    console.log('Listening on ' + bind);
 }

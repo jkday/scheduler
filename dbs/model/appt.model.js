@@ -12,10 +12,10 @@ var apptSchema = mongoose.Schema({
     //password: { type: String, required: true },
     //createdAt: { type: Date, default: Date.now },
     title: String,
-    apptId: String,
+    apptID: { type: String, required: true, unique: true },
     date: String,
     tod: String, //time of day
-    customerName: String,
+    customerName: String, //firstname_lastname
     estimatePrice: Number,
     displayName: String,
     description: String,
@@ -54,6 +54,8 @@ apptSchema.methods.name = function() {
 
 //var connection = mongoose.createConnection('mongodb://localhost:27017/test');
 
+// Make Mongoose use `findOneAndUpdate()` instead of useFindAndModify
+mongoose.set('useFindAndModify', false);
 var Appt = mongoose.model("Appt", apptSchema);
 
 
