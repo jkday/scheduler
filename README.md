@@ -3,6 +3,7 @@
 
 1. clone this directory: git clone https://github.com/jkday/scheduler.git
 1. from a shell/command prompt with access to docker commands build the image
+    1. change into the cloned directory
     1. docker build -t carappt .
 1. Run the web App in docker 
     1. docker run -p 4000:3003 -e ROOT_URL=http://localhost -e MONGO_URL=mongodb://localhost:27017 -it carappt
