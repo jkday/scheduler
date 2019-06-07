@@ -1,5 +1,8 @@
 $(function() {
 
+    /*******main section to initialize buttons and UI features with event handler code*******/
+
+    /*initialize datepicker UI widget*/
     todaysDate = new Date();
     var dateOpts = {
         defaultDate: "+0",
@@ -14,6 +17,7 @@ $(function() {
     dateOpts['numberOfMonths'] = 1;
     $(".lookup_date").datepicker(dateOpts);
 
+    /**** set handlers for frontpage submit buttons ****/
     var submitBtns = ["singleSearch", "multiSearch", "deleteAll"];
     var searchHandler = [ssHandler, msHandler, deleteHandler];
 
@@ -31,14 +35,17 @@ $(function() {
 
     $('#new_appt').on('submit', function() {});
 
-    $.makeHideBtn('#form_close', '#add_appt_form', 'click');
+    $.makeHideBtn('#form_close', '#add_appt_form', 'click'); //modal for new appointment form
 
     $.setHandler('#appt_add_btn', 'click', { show: '#add_appt_form' }, apptFn['add']);
     $('#frontpage_appt_datepicker').on('change', function() {
-        $('#appt_form_date').val(this.value);
-    })
+            $('#appt_form_date').val(this.value);
+        }) //send selected date value to new appointment form
 
 
+    /********helper functions to perform event handler operations for UI submit buttons*******/
+
+    /*single search handler*/
     function ssHandler(event) {
 
         console.log("inside sshandler", event.data.elem)
@@ -48,11 +55,15 @@ $(function() {
         var fData = getFormInfo(formDivName);
 
         var url = '/scheduler/' + fData.apptID;
+        console.log(url)
 
         $.ajax({
             url: url,
             type: 'GET',
             data: fData,
+            contentType: "text/plain",
+            dataType: "json",
+            processData: false,
             success: function(response) {
                 // alert(response);
                 // $('#add_appt_form').css("display", "none");
@@ -75,6 +86,7 @@ $(function() {
 
     }
 
+    /*multiple search handler*/
     function msHandler(event) {
 
         console.log("inside mshandler", event.data.elem);
@@ -82,13 +94,18 @@ $(function() {
         event.preventDefault(); //stops form from posting as normal
 
         var fData = getDateFormInfo(formDivName);
-        var url = '/scheduler';
+        var url = '/scheduler/';
         console.log(fData)
 
+        var fDataStr = JSON.stringify(fData);
         $.ajax({
             url: url,
             type: 'GET',
             data: fData,
+            contentType: "text/plain",
+            //contentType: 'application/json',
+            //dataType: "json",
+            //processData: true,
             success: function(response) {
                 // alert(response);
                 // $('#add_appt_form').css("display", "none");
@@ -115,6 +132,7 @@ $(function() {
 
     }
 
+    /*DELETE ALL appointments handler*/
     function deleteHandler(event) {
 
         var uri = '/scheduler';
@@ -139,13 +157,52 @@ $(function() {
         });
     }
 
-});
+
+    /*helper functions to parse form into objects */
+    function getFormInfo(formDiv) {
+        var formInputs = $(formDiv).children('[name]');
+        //console.log(formInputs)
+        var fData = {};
+        formInputs.each(function(elem) {
+            fData[this.name] = this.value;
+            console.log("n: ", this.name, " v: ", this.value)
+
+        });
+        //console.log("FDATA", fData);
+        //fData.apptID = fData.date + fData.tod + cName;
+        fData.cName = fData.firstname + "_" + fData.lastname;
+
+        var dateStr = fData.date.split('/');
+        var todHR = fData.tod.slice(0, 2);
+        var todMin = fData.tod.slice(2);
+        //apptID: 2 digit Mon + 2 digit day + 4 digit year + 2 digit Hr + 2 digit Min
+        var apptID = [parseInt(dateStr[0]).pad(), parseInt(dateStr[1]).pad(), dateStr[2], todHR, todMin].join("");
+        console.log(apptID);
+        fData.apptID = apptID + fData.cName;
+        //fData.apptID = apptID
+        return fData;
+    }
+
+    function getDateFormInfo(formDiv) {
+        var formInputs = $(formDiv).children('[name]');
+        console.log(formInputs)
+            //console.log(formInputs);
+        var fData = {};
+        formInputs.each(function(elem) {
+            fData[this.name] = this.value;
+            console.log("n: ", this.name, " v: ", this.value)
+
+        });
+
+        return fData;
+    }
+
+}); //endof main section
 
 
 function getFormInfo(formDiv) {
     var formInputs = $(formDiv).children('[name]');
-    console.log(formInputs)
-        //console.log(formInputs);
+    //console.log(formInputs)
     var fData = {};
     formInputs.each(function(elem) {
         fData[this.name] = this.value;

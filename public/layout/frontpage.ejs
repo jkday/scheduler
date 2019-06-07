@@ -9,24 +9,32 @@
     <div class='content'>
         <div id='left' class="panel" style='background-color:green;float:left;height:100%;width:75%'>
             <h2 style="margin:0 0 0 5px">Use Date selector on the right to add a new appointment</h2>
-            Search current appointments by user:
-            <div>Username: <input type="text">
-                <div class='button'>Submit</div>
+            <h3>Search for specific appointments by user:</h3>
+            <div class='singleSearch'>First Name (client): <input id="ss_firstname" name="firstname" class='' type="text">
+                <br> Last Name (client): <input id="ss_lastname" name="lastname" class='' type="text">
+                <br> Date: <input class='lookup_date' name="date" id='ss_date' type="text">
+                <br>(Military) Time: <input class='' id='ss_tod' name="tod" type="text">
+                <div class='button '>Submit</div>
             </div>
             <p>
-                Search appointments by Date & Time:
-                <div>Username: <input type="text">
-                    <div class='button'>Submit</div>
+                <h3>Search for appointments within a date range:</h3>
+                <div class='multiSearch'>
+                    Start Date: <input id="ms_startdate" name="startdate" class='lookup_date' type="text">
+                    <br> End Date: <input id="ms_enddate" name="enddate" class='lookup_date' type="text">
+                    <!--
+                    <br>First Name (optional): <input id="ms_firstname" name="firstname" class='' type="text">
+                    <br> Last Name (optional): <input id="ms_lastname" name="lastname" class='' type="text">
+                   -->
+                    <!-- <br>Time: <input class='' id='ms_tod' type="text"> -->
+                    <div class='button '>Submit</div>
                 </div>
             </p>
             <p>
-                Search all appointments between two dates:
+                <h3>Delete all appointments in the db:</h3>
                 <div style="display:inline-block">
-                    <div style="display:inline-block">Username: <input type="text">
-                        <div class='button'>Submit</div>
-                    </div>
-                    <div style="display:inline-block">Username: <input type="text">
-                        <div class='button'>Submit</div>
+
+                    <div class='deleteAll' style="display:inline-block"><span style="color:white;font-display:bold">This Action CANNOT be UnDone!</span>
+                        <div class='button'>Delete All</div>
                     </div>
                 </div>
             </p>
@@ -38,7 +46,7 @@
         <div id="navi" class="panel" style='background-color:white;height:100%;'>
 
             <h2 style="margin:0 0 0 5px;">Select date to schedule next appointment</h2>
-            Date: <input type="text" id="datepicker">
+            Date: <input type="text" class="new_date" id="frontpage_appt_datepicker">
             <div id='appt_add_btn' class='button'>Make Appointment</div>
 
         </div>

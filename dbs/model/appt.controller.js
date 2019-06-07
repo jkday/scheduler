@@ -2,7 +2,7 @@ const Appt = require('./appt.model.js');
 //const querystring = require('querystring');
 const url = require('url');
 
-//Create new Appointment
+//Create new Appointment => POST
 exports.create = function(req, res) {
 
     console.log("INSIDE POST")
@@ -66,18 +66,29 @@ exports.create = function(req, res) {
 
 }; //endof Appointment create
 
-// Retrieve all products from the database.
+// Retrieve all products from the database => GET (all)
 exports.findAll = function(req, res) {
-    /*
-    console.log("INSIDE GET All: ");
 
-    console.log("PARMS: ", req.params);
-    console.log("BODY: ", req.body);
-    console.log("qs: ", req.query)
-*/
+    console.log("INSIDE GET All: ");
+    /*
+        console.log("PARMS: ", req.params);
+        console.log("BODY: ", req.body);
+        console.log("qs: ", req.query)
+    */
     //db.car.find({ speed: { $gt: 40, $lt: 65 } })
-    var startDate = new Date(req.query.startdate).toISOString();
-    var endDate = new Date(req.query.enddate).toISOString();
+    var startDate;
+    var endDate;
+
+    try {
+        startDate = new Date(req.query.startdate).toISOString();
+        endDate = new Date(req.query.enddate).toISOString();
+    } catch (err) {
+        console.error("Invalid Date: canceling update!", err);
+        return res.status(400).json({
+            message: "Date format is invalid"
+        });
+    }
+
 
     Appt.find({ 'date': { $gt: startDate, $lt: endDate } })
         .then(myAppts => {
@@ -89,7 +100,7 @@ exports.findAll = function(req, res) {
         });
 };
 
-// Find a single product with a productId
+// Find a single product with a productId => GET (single)
 exports.findOne = function(req, res) {
     console.log("INSIDE FindOne")
     Appt.findOne({ apptID: req.params.apptID })
@@ -128,7 +139,7 @@ exports.findOne = function(req, res) {
         });
 };
 
-// Update a product
+// Update a product => PUT
 exports.update = (req, res) => {
     /*
     console.log("INSIDE PUT!!!");
@@ -137,7 +148,18 @@ exports.update = (req, res) => {
     */
 
     var query = {};
-    // Request validation
+    var myDate;
+    try {
+        myDate = new Date(req.body.date).toISOString();
+    } catch (err) {
+        console.error("Invalid Date: canceling update!", err);
+        return res.status(400).json({
+            message: "Date format is invalid"
+        });
+    }
+    req.body.date = myDate;
+    console.log("got new date!", myDate)
+        // Request validation
     if (!req.body) {
         return res.status(400).json({
             message: "Appointment information is empty"
@@ -166,6 +188,26 @@ exports.update = (req, res) => {
 
     }
 
+    /* User can't change the appointmentID so update this ID in case it needs changing*/
+
+    var myDate = new Date(myDate);
+    let mon = (myDate.getMonth() + 1);
+    mon = mon < 10 ? '0' + mon : mon.toString(); // always return a 2 digit month
+    var dateStr = "" + mon + myDate.getDate() + myDate.getFullYear();
+    var todStr = new String(req.body.tod).replace(/[^0-9+]+/gi, ''); //remove all non numeric characters
+    //should have a 3-4 digit for the time
+    //pad with a leading zero to make it a 4 digit number
+    if (todStr.length < 3 || todStr.length > 4) todStr = '0000';
+    else if (todStr.length == 3) todStr = "0" + todStr;
+
+    var cName = new String(req.body.customerName).trim().replace(/\W/, '_');
+    //apptID: 2 digit Mon + 2 digit day + 4 digit year + 2 digit Hr + 2 digit Min
+    var newApptID = [dateStr, todStr, cName].join("");
+    req.body.apptID = newApptID;
+    req.body.tod = todStr;
+    req.body.customerName = cName;
+
+
     // Find and update product with the request body
     Appt.findOneAndUpdate(query, req.body, { new: true }) //new: return updated document
         .then(myAppt => {
@@ -187,7 +229,7 @@ exports.update = (req, res) => {
         });
 };
 
-// Delete a note with the specified noteId in the request
+// Delete an appointment with the specified apptId in the request
 exports.delete = (req, res) => {
     console.log("INSIDE DELETE!!!");
     console.log(req.params)

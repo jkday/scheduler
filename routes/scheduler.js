@@ -3,11 +3,11 @@ var router = express.Router();
 
 var apptScheduler = require('../dbs/model/appt.controller.js')
 
-/* Retreive all Appointments */
-router.get("/scheduler?*", apptScheduler.findAll);
-
 // Retrieve a single Appointment with apptID
-router.get('/scheduler/:apptID', apptScheduler.findOne);
+router.get('/scheduler(/:apptID)+', apptScheduler.findOne);
+
+/* Retreive all Appointments */
+router.get(/^\/scheduler\/\?*.*/, apptScheduler.findAll);
 
 /* Create new Appointment */
 router.post("/scheduler", apptScheduler.create);

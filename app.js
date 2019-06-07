@@ -11,10 +11,9 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var scheduleRouter = require('./routes/scheduler');
 
-// adding public routs. 
+// adding public routes. 
 var publicDirectory = path.join(process.cwd(), 'public');
 console.log("Public path at: " + publicDirectory);
-//console.log("Public path at: " + __dirname)
 
 var app = express();
 
@@ -25,7 +24,7 @@ app.use(express.static(publicDirectory, {
     maxAge: 0,
 }));
 
-app.set('view engine', 'ejs');
+app.set('view engine', 'ejs'); //use ejs templating
 
 app.disable('view cache');
 
@@ -37,18 +36,19 @@ app.use(function(req, res, next) {
 
 app.use(logger('dev'));
 
+/*** Input parser section***/
 app.use(bodyParser.text());
 app.use(express.json({ type: 'application/json' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 var db = {};
-var connect2DB = function(db, retries) {
+var connect2DB = function(db, retries) { //try to connect to MongoDB
 
     var attempt = retries || 1;
     //    db = mongoose.connect("mongodb://localhost:27017/db", { useNewUrlParser: true }).then(() => {
 
-    db = mongoose.connect("mongodb://localhost:27017/test", { useNewUrlParser: true }).then(() => {
+    db = mongoose.connect("mongodb://localhost:27017/db", { useNewUrlParser: true }).then(() => {
         console.log("Successfully connected to the database");
     }).catch(err => {
 
@@ -68,14 +68,8 @@ var connect2DB = function(db, retries) {
 };
 connect2DB(db);
 
-/*
-app.use(session({
-    secret: "TKRv0IJs=HYqrvagQ#&!F!%V]Ww/4KiVs$s,<<MX",
-    resave: true,
-    saveUninitialized: true
-    }));
-    */
 
+/*** ROUTER Section ****/
 app.get('/', indexRouter);
 app.get('/apptList', function(req, res) {
 

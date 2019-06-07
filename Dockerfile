@@ -20,6 +20,7 @@ RUN apt-get install -yqq --no-install-recommends\
     curl\
     htop\
     vim\
+    iputils-ping\
     sudo
 
 # File Author / Maintainer
@@ -43,7 +44,7 @@ EXPOSE 27017
 EXPOSE 3003
 
 # Default port to execute the entrypoint (MongoDB)
-CMD ["--port 27017"]
+#CMD ["--port 27017"]
 
 # RUN apt-get update -yqq &&\
 #     apt-get upgrade -yqq &&\
@@ -94,10 +95,14 @@ WORKDIR /code
 RUN npm config set strict-ssl false
 RUN npm install
 
-WORKDIR /
+# WORKDIR /
 
-COPY ./entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# COPY ./entrypoint.sh /entrypoint.sh
+# RUN chmod +x /entrypoint.sh
 
-# do nothing.
-ENTRYPOINT ["/entrypoint.sh"]
+# # do nothing.
+#ENTRYPOINT ["/entrypoint.sh"]
+
+RUN chmod +x ./run.sh
+
+ENTRYPOINT ["./run.sh"]

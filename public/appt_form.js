@@ -1,3 +1,9 @@
+/***
+ * 
+ * Modal for collecting user information to make new appointment
+ * It is visible by selecting the "Make Appointment" button on the right of the web app
+ * Controls the 'POST'/CREATE method of the REST application
+ */
 $(function() {
     var formtext = `<div style='padding:6px;'>
     <span id='form_close' class='close_parent' style="float:right">✖ &nbsp;&nbsp;</span>
@@ -69,7 +75,7 @@ $(function() {
         var dateStr = fData.date.split('/');
         var todHR = fData.tod.slice(0, 2);
         var todMin = fData.tod.slice(2);
-        //apptID: 2 digit Mon + 2 digit day + 4 digit year + 2 digit Hr + 2 digit Min
+        //apptID: 2 digit Mon + 2 digit day + 4 digit year + 2 digit Hr + 2 digit Min + customer name (no spaces)
         var apptID = [parseInt(dateStr[0]).pad(), parseInt(dateStr[1]).pad(), dateStr[2], todHR, todMin].join("");
         console.log(apptID);
         fData.apptID = apptID + fData.cName;

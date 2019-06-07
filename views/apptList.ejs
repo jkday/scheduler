@@ -1,3 +1,12 @@
+<!--
+    Window to display results of a query
+    single or multiple entries will be displayed in a single column
+    This page has the UPDATE/PUT & DELETE feature for individual documents in our app
+
+    Queries are performed by looking for the appointment ID
+    apptID: 2 digit Mon + 2 digit day + 4 digit year + 2 digit hr + 2 digit min + customer name (no spaces)
+
+-->
 <!DOCTYPE html>
 <html>
 
@@ -37,113 +46,182 @@
 
                 var apptInfo = {};
                 infoPairs = formInputs.text().split('\n');
-                //console.log(infoPairs)
+                console.log(infoPairs)
 
-                infoPairs.forEach((line, ind) => {
+                for (var j = 0; j < infoPairs.length; j++) {
                     //don't update native DB attributes
-                    if (line.indexOf('_') == 0 || line.indexOf('createdAt') !=-1 || line.indexOf('updatedAt')!= -1 ) { 
-                        return; //stop processing this line item
+                    if (infoPairs[j].indexOf('_') == 0 || infoPairs[j].indexOf('createdAt') != -1 || infoPairs[j].indexOf('updatedAt') != -1) {
+                        continue; //stop processing this line item
                     }
-                    let [key, val] = line.split(":");
-                    if(val){
-                          apptInfo[key] = val.trim();
+                    var [key, val] = infoPairs[j].split(":");
+                    if (val) {
+                        apptInfo[key] = val.trim();
                     }
-                });
+                    // if (key.indexOf("date") >= 0) {
+                    //     try {
+                    //         let easyDate = new Date(val);
+                    //         let fixDate = (easyDate.getMonth() + 1).pad() + "/" + easyDate.getDate().pad() + "/" + easyDate.getFullYear();
+                    //         apptInfo[key] = fixDate;
+                    //         console.log(fixDate);
+                    //     } catch (err) {
+                    //         alert("Please use MM/DD/YYYY Date format");
+                    //         return;
+                    //     }
+
+                    // }
+
+
+                }
                 /*get all input-based data from an appointment*/
-                formInputs = $("#" + event.data.listingID).find("input").each(function(){
-                    apptInfo[this.name] = new String(this.value).trim();
-                });
+
+                formInputs = $("#" + event.data.listingID).find("input");
+                console.log(formInputs)
+
+                for (j = 0; j < formInputs.length; j++) {
+
+                    if (new String(formInputs[j].name).indexOf("date") >= 0) {
+                        //console.log(formInputs[j].name, ": ", formInputs[j].value);
+                        try {
+                            let easyDate = new Date(formInputs[j].value);
+                            let fixDate = (easyDate.getMonth() + 1).pad() + "/" + easyDate.getDate().pad() + "/" + easyDate.getFullYear();
+                            apptInfo[formInputs[j].name] = fixDate;
+                            console.log("fixing input Date:", fixDate);
+                        } catch (err) {
+                            alert("Please use MM/DD/YYYY Date format");
+                            console.log("Error msg: ", err)
+                            return;
+                        }
+                    }
+                    apptInfo[formInputs[j].name] = new String(formInputs[j].value).trim();
+                }
 
 
-
-                console.log(apptInfo)
+                console.log(apptInfo);
                 apptInfo['apptID'] = apptInfo['apptID'].trim();
-                var uri = '/scheduler/'+ apptInfo['apptID'];
-                    
-                         $.ajax({
-                             url: uri,
-                             type: 'PUT',
-                             data: apptInfo,
-                             success: function(response) {
-                                 alert('Appointment Update Sent');
-                                 $('#'+event.data.listingID).css("display", "none");
-                                 console.log("Response: ", response);
-                             },
-                             error: function(xhr, status, error) {
-                                 console.error("Appt Update Error: " + status);
-                                 console.error("PUT Error:", error);
-                                 //console.error("PUT Error:", xhr.responseText);
-                                 console.error("PUT Error:", xhr.responseJSON.message);
+                var uri = '/scheduler/' + apptInfo['apptID'];
+                $.ajax({
+                    url: uri,
+                    type: 'PUT',
+                    data: apptInfo,
+                    success: function(response) {
+                        alert('Appointment Update Sent');
+                        $('#' + event.data.listingID).css("display", "none");
+                        console.log("Response: ", response);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Appt Update Error: " + status);
+                        console.error("PUT Error:", error);
+                        //console.error("PUT Error:", xhr.responseText);
+                        console.error("PUT Error:", xhr.responseJSON.message);
 
 
-                             alert('Problem updating appointment check error logs');
-                                }
-                         
-                         });
+                        alert('Problem updating appointment check error logs');
+                    }
+
+                });
             };
 
-             /********DELETE Appointment Handler *********/
+            /********DELETE Appointment Handler *********/
 
             var deleteAppt = function(event) {
-                     /*get all text based data from an appointment*/
+                /*get all text based data from an appointment*/
                 var formInputs = $("#" + event.data.listingID).find("h3");
 
                 var apptInfo = {};
                 infoPairs = formInputs.text().split('\n');
                 //console.log(infoPairs)
+                for (var j = 0; j < infoPairs.length; j++) {
 
-                infoPairs.forEach((line, ind) => {
                     //don't update native DB attributes
-                    if (line.indexOf('_') == 0 || line.indexOf('createdAt') !=-1 || line.indexOf('updatedAt')!= -1 ) { 
-                        return; //stop processing this line item
+                    if (infoPairs[j].indexOf('_') == 0 || infoPairs[j].indexOf('createdAt') != -1 || infoPairs[j].indexOf('updatedAt') != -1) {
+                        continue; //stop processing this line item
                     }
-                    let [key, val] = line.split(":");
-                    if(val){
-                          apptInfo[key] = val.trim();
+                    let [key, val] = infoPairs[j].split(":");
+                    if (val) {
+                        apptInfo[key] = val.trim();
                     }
-                });
+                    // if (key.indexOf("date") >= 0) {
+                    //     try {
+                    //         let easyDate = new Date(val);
+                    //         let fixDate = (easyDate.getMonth() + 1).pad() + "/" + easyDate.getDate().pad() + "/" + easyDate.getFullYear();
+                    //         apptInfo[key] = fixDate;
+                    //         console.log(fixDate);
+                    //     } catch (err) {
+                    //         alert("Please use MM/DD/YYYY Date format");
+                    //         return;
+                    //     }
+
+                    // }
+                }
                 /*get all input-based data from an appointment*/
-                formInputs = $("#" + event.data.listingID).find("input").each(function(){
-                    apptInfo[this.name] = new String(this.value).trim();
+                formInputs = $("#" + event.data.listingID).find("input");
+
+                for (j = 0; j < formInputs.length; j++) {
+
+                    if (new String(formInputs[j].name).indexOf("date") >= 0) {
+                        //console.log(formInputs[j].name, ": ", formInputs[j].value);
+                        try {
+                            let easyDate = new Date(formInputs[j].value);
+                            let fixDate = (easyDate.getMonth() + 1).pad() + "/" + easyDate.getDate().pad() + "/" + easyDate.getFullYear();
+                            apptInfo[formInputs[j].name] = fixDate;
+                            console.log("fixing input Date:", fixDate);
+                        } catch (err) {
+                            alert("Please use MM/DD/YYYY Date format");
+                            console.log("Error msg: ", err)
+                            return;
+                        }
+                    }
+                    apptInfo[formInputs[j].name] = new String(formInputs[j].value).trim();
+                }
+
+                console.log(apptInfo);
+                // var query = {'apptID': apptInfo['apptID']};
+                var uri = "/scheduler/" + apptInfo['apptID'];
+
+
+
+
+                $.ajax({
+                    url: uri,
+                    type: 'DELETE',
+                    //data: apptInfo,
+                    success: function(response) {
+                        alert('Appointment delete request sent');
+                        $('#' + event.data.listingID).css("display", "none");
+                        console.log("Response: ", response);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Appt Delete Error: " + status);
+                        console.error("DELETE Error:", error);
+                        //console.error("PUT Error:", xhr.responseText);
+                        console.error("DELETE Error:", xhr.responseJSON.message);
+
+
+                        alert('Problem deleting appointment check error logs');
+                    }
+
                 });
-
-console.log(apptInfo);
-               // var query = {'apptID': apptInfo['apptID']};
-                var uri = "/scheduler/"+ apptInfo['apptID'];
-                
-                         $.ajax({
-                             url: uri,
-                             type: 'DELETE',
-                             //data: apptInfo,
-                             success: function(response) {
-                                 alert('Appointment delete request sent');
-                                 $('#'+event.data.listingID).css("display", "none");
-                                 console.log("Response: ", response);
-                             },
-                             error: function(xhr, status, error) {
-                                 console.error("Appt Delete Error: " + status);
-                                 console.error("DELETE Error:", error);
-                                 //console.error("PUT Error:", xhr.responseText);
-                                 console.error("DELETE Error:", xhr.responseJSON.message);
-
-
-                             alert('Problem deleting appointment check error logs');
-                                }
-                         
-                         });
 
             };
-
-
+            /*** main section for apptList.ejs!!! 
+             *  build the webpage with the result of the latest query, stored in the appointment list (aList) object 
+             ****/
             window.aList.forEach(function(appt, ind) {
                 var divName = "apptListing" + ind;
                 var htmlStr = '<div id="' + divName + '" class="apptDetails"><hr> <h2>' + appt.customerName + ": " + appt.date + " @ " + appt.tod + '</h2>';
                 htmlStr += '<h3>';
+                /*loop for writing the appointment listing to html*/
                 for (var attr in appt) {
-                    if (attr.indexOf('apptID') == 0 || attr.indexOf('_') == 0 || attr.indexOf('createdAt') !=-1 ||attr.indexOf('updatedAt')!= -1 ) { //don't show DB attributes
+                    if (attr.indexOf('apptID') == 0 || attr.indexOf('_') == 0 || attr.indexOf('createdAt') != -1 || attr.indexOf('updatedAt') != -1) { //don't show DB attributes
                         htmlStr += "<br>" + attr + ": " + appt[attr] + "\n";
                     } else {
-                        htmlStr += '<br>' + attr + ': <input class="apptDetails" id="'+ divName+'_'+attr +'" type="text" name="'+attr+'" value="'+ appt[attr] + '">\n';
+                        if (attr.indexOf('date') >= 0) {
+                            let easyDate = new Date(appt[attr]);
+                            let fixDate = (easyDate.getMonth() + 1).pad() + "/" + easyDate.getDate().pad() + "/" + easyDate.getFullYear();
+                            appt[attr] = fixDate;
+                            console.log("fixing Date", fixDate)
+                        }
+                        htmlStr += '<br>' + attr + ': <input class="apptDetails" id="' + divName + '_' + attr + '" type="text" name="' + attr + '" value="' + appt[attr] + '">\n';
 
                     }
                 }
@@ -153,10 +231,10 @@ console.log(apptInfo);
             <div id="appt_add_btn" class="button" style="display:inline-block">Delete Appointment</div></div>';
                 htmlStr += apptToolBar + '<hr></div>';
 
-
+                /*add UPDATE & DELETE buttons & handlers to each listing*/
                 $('#appts').append(htmlStr);
                 var btns = $('#' + divName).find(".button");
-               // console.log(btns)
+                // console.log(btns)
 
                 for (var j = 0; j < btns.length; j++) {
                     console.log(btns.eq(j).text())
@@ -167,13 +245,13 @@ console.log(apptInfo);
                     } else if (btns.eq(j).text() == "Delete Appointment") {
                         btns.eq(j).on('click', {
                             listingID: divName
-                        },deleteAppt);
+                        }, deleteAppt);
 
                     }
 
                 }
 
-            }); //endof forEach
+            }); //endof forEach appt listing
 
 
         });

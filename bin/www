@@ -25,15 +25,17 @@ if (process.platform === "win32") {
 //graceful shutdown
 process.on("SIGINT", function() {
     //shutdown monogDB server 1st
-    end_dbPipe(dbChildProc);
+    //    end_dbPipe(dbChildProc);
     //shutdown node app next
     console.error("Shutting down node app...");
     process.exit();
 
 });
 
-/*start MongoDB before launching app*/
+/*Uncomment this section to run start MongoDB & webapp together... had to disable due to docker issues*/
 
+/*start MongoDB before launching app*/
+/*
 const spawn = require('child_process').spawn;
 //const pipe = spawn('mongod', ['--dbpath=<LOCATION>', '--port', '<PORT>'])
 const dbChildProc = spawn('mongod', ['--dbpath=c:\\data\\test', '--port', '27017']);
@@ -60,7 +62,9 @@ function end_dbPipe(childProcess) {
     childProcess.kill('SIGINT');
 }
 
-setTimeout(() => { let j = 1 + 1 }, 2000); //give the MongoDB a chance to start up (2sec pause)
+
+setTimeout(() => { for (var i = 0; i < 10000; i++) { let j = 1 + 1 } }, 2000); //give the MongoDB a chance to start up (2sec pause)
+*/
 
 /**
  * Get port from environment and store in Express.
