@@ -9,7 +9,7 @@
 1. Access the web App from a local browser (chrome or firefox only!) 
     1. http://localhost:4000
 
-##USAGE
+## USAGE
 1. Make several appointments on the right hand side of the app
 1. Query the DB using the search features on the left hand side and from the Pop-up window
 1. The single update & single delete features are only found after you do a GET (top left) to reveal a previously saved appointment
