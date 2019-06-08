@@ -7,6 +7,11 @@
     1. docker build -t carappt .
 1. Run the web App in docker 
     1. docker run -p 4000:3003 -e ROOT_URL=http://localhost -e MONGO_URL=mongodb://localhost:27017 -it carappt
+    1. NOTE: There is a 15 sec delay embedded in the script to give the DB time to startup
+    Look for the following text to know when the webapp has started:
+        Public path at: /code/public
+        Listening on port 3003
+        Successfully connected to the database
 1. Access the web App from a local browser (chrome or firefox only!) 
     1. http://localhost:4000
 
