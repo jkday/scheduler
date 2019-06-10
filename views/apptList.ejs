@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html>
 <!--
     Window to display results of a query
     single or multiple entries will be displayed in a single column
@@ -7,8 +9,6 @@
     apptID: 2 digit Mon + 2 digit day + 4 digit year + 2 digit hr + 2 digit min + customer name (no spaces)
 
 -->
-<!DOCTYPE html>
-<html>
 
 <head>
     <title>
@@ -37,11 +37,11 @@
                 let a = 1 + 1;
             });
 
-            /********UPDATE Appointment Handler *********/
+            //********UPDATE Appointment Handler *********/
             var updateAppt = function(event) {
                 console.log(event.data.listingID)
 
-                /*get all text based data from an appointment*/
+                //*get all text based data from an appointment*/
                 var formInputs = $("#" + event.data.listingID).find("h3");
 
                 var apptInfo = {};
@@ -72,7 +72,7 @@
 
 
                 }
-                /*get all input-based data from an appointment*/
+                //*get all input-based data from an appointment*/
 
                 formInputs = $("#" + event.data.listingID).find("input");
                 console.log(formInputs)
@@ -121,10 +121,10 @@
                 });
             };
 
-            /********DELETE Appointment Handler *********/
+            //********DELETE Appointment Handler *********/
 
             var deleteAppt = function(event) {
-                /*get all text based data from an appointment*/
+                //*get all text based data from an appointment*/
                 var formInputs = $("#" + event.data.listingID).find("h3");
 
                 var apptInfo = {};
@@ -153,7 +153,7 @@
 
                     // }
                 }
-                /*get all input-based data from an appointment*/
+                //*get all input-based data from an appointment*/
                 formInputs = $("#" + event.data.listingID).find("input");
 
                 for (j = 0; j < formInputs.length; j++) {
@@ -203,9 +203,12 @@
                 });
 
             };
-            /*** main section for apptList.ejs!!! 
-             *  build the webpage with the result of the latest query, stored in the appointment list (aList) object 
-             ****/
+
+
+            ///*** main section for apptList.ejs!!! 
+            // *  build the webpage with the result of the latest query, 
+            // *  stored in the appointment list (aList) object 
+            // ****/
             window.aList.forEach(function(appt, ind) {
                 var divName = "apptListing" + ind;
                 var htmlStr = '<div id="' + divName + '" class="apptDetails"><hr> <h2>' + appt.customerName + ": " + appt.date + " @ " + appt.tod + '</h2>';
@@ -217,6 +220,7 @@
                     } else {
                         if (attr.indexOf('date') >= 0) {
                             let easyDate = new Date(appt[attr]);
+                            console.log("easyDate:", easyDate);
                             let fixDate = (easyDate.getMonth() + 1).pad() + "/" + easyDate.getDate().pad() + "/" + easyDate.getFullYear();
                             appt[attr] = fixDate;
                             console.log("fixing Date", fixDate)
@@ -231,7 +235,7 @@
             <div id="appt_add_btn" class="button" style="display:inline-block">Delete Appointment</div></div>';
                 htmlStr += apptToolBar + '<hr></div>';
 
-                /*add UPDATE & DELETE buttons & handlers to each listing*/
+                //*add UPDATE & DELETE buttons & handlers to each listing*/
                 $('#appts').append(htmlStr);
                 var btns = $('#' + divName).find(".button");
                 // console.log(btns)

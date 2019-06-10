@@ -32,15 +32,20 @@ $(function() {
     });
 
 
-
-    $('#new_appt').on('submit', function() {});
-
     $.makeHideBtn('#form_close', '#add_appt_form', 'click'); //modal for new appointment form
 
-    $.setHandler('#appt_add_btn', 'click', { show: '#add_appt_form' }, apptFn['add']);
+    $.setHandler('#appt_add_btn', 'click', { show: '#add_appt_form' }, apptFn['add']); //show/hide new appt modal
     $('#frontpage_appt_datepicker').on('change', function() {
             $('#appt_form_date').val(this.value);
         }) //send selected date value to new appointment form
+    $.setHandler('.autoAppt > .button', 'click', apptFn['toggle']); //toggle randomEntry feature on/off
+
+    /***
+     * END of Main execution section
+     *     -below are helper functions
+     *     -initialization code is listed above this point
+     */
+
 
 
     /********helper functions to perform event handler operations for UI submit buttons*******/

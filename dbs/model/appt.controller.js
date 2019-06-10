@@ -1,4 +1,10 @@
-const Appt = require('./appt.model.js');
+/* 
+ *  DB API Controller for communicating with mongoDB 
+ *      called by routes/scheduler.js
+ */
+
+
+const Appt = require('./appt.model.js'); //DB Model used to talk to MongoDB
 //const querystring = require('querystring');
 const url = require('url');
 
@@ -26,8 +32,19 @@ exports.create = function(req, res) {
     }
 
 
-    var myDate = new Date(req.body.date).toISOString();
-    // Create a new Appt
+    var myDate;
+    var time;
+    var dateChecker = formatDate(req.body);
+    if (dateChecker.rtnCode !== 200)
+        return res.status(dateChecker.rtnCode).json({
+            message: dateChecker.message
+        });
+    else {
+        myDate = dateChecker.date;
+        time = dateChecker.time;
+    }
+
+    // Create a new Appointment for our POST
     const myAppt = new Appt({
         username: "testUser",
         title: req.body.title || "Appointment heading",
@@ -40,11 +57,16 @@ exports.create = function(req, res) {
         description: req.body.description || "N/A",
     });
 
+    /**
+     * Check to make sure this appointment hasn't already been created
+     *      if this appt time slot is taken then decline user request (404)
+     *      -if appt hasn't been previously created then create a new Appt
+     */
     Appt.findOne({ apptID: req.body.apptID })
         .then(foundAppt => {
             if (foundAppt) {
-                return res.status(404).json({
-                    message: "Appoinment take is already taken on " + req.body.date + " time: " + req.body.tod
+                return res.status(409).json({
+                    message: "Appoinment time is already taken on " + req.body.date + " at time: " + req.body.tod
                 });
             } else {
 
@@ -64,7 +86,7 @@ exports.create = function(req, res) {
             } //endof else
         }); //endof Appt.findOne.then()
 
-}; //endof Appointment create
+}; //endof exports.post (Appointment create)
 
 // Retrieve all products from the database => GET (all)
 exports.findAll = function(req, res) {
@@ -82,15 +104,18 @@ exports.findAll = function(req, res) {
     try {
         startDate = new Date(req.query.startdate).toISOString();
         endDate = new Date(req.query.enddate).toISOString();
+        if (endDate < startDate) {
+            throw "End Date must be great than the Start Date!"
+        }
     } catch (err) {
         console.error("Invalid Date: canceling update!", err);
         return res.status(400).json({
-            message: "Date format is invalid"
+            message: "Date format is invalid: " + err.toString(),
         });
     }
 
-
-    Appt.find({ 'date': { $gt: startDate, $lt: endDate } })
+    /*find all appointments between the start & endDate */
+    Appt.find({ 'date': { $gte: startDate, $lte: endDate } })
         .then(myAppts => {
             res.send(myAppts);
         }).catch(err => {
@@ -98,7 +123,7 @@ exports.findAll = function(req, res) {
                 message: err.message || "Error while retrieving appointment"
             });
         });
-};
+}; //endof exports.findAll
 
 // Find a single product with a productId => GET (single)
 exports.findOne = function(req, res) {
@@ -137,29 +162,42 @@ exports.findOne = function(req, res) {
                 message: "Something wrong retrieving appointment with id " + req.params.apptID
             });
         });
-};
+}; //endof exports.findOne
 
 // Update a product => PUT
 exports.update = (req, res) => {
-    /*
+
     console.log("INSIDE PUT!!!");
+
     console.log(req.params)
     console.log(req.body)
-    */
+
+    /***
+     * Param requirements:
+     * 1) date must come in MM/DD/YYYY format
+     * 2) tod (time) must be given in military time, preferably without punctuation
+     * 3) data is sent via the body parameter
+     */
+
 
     var query = {};
     var myDate;
-    try {
-        myDate = new Date(req.body.date).toISOString();
-    } catch (err) {
-        console.error("Invalid Date: canceling update!", err);
-        return res.status(400).json({
-            message: "Date format is invalid"
+    var time;
+    var dateChecker = formatDate(req.body);
+    if (dateChecker.rtnCode !== 200)
+        return res.status(dateChecker.rtnCode).json({
+            message: dateChecker.message
         });
+    else {
+        myDate = dateChecker.date;
+        time = dateChecker.time;
     }
+
+
     req.body.date = myDate;
-    console.log("got new date!", myDate)
-        // Request validation
+
+
+    // Request validation
     if (!req.body) {
         return res.status(400).json({
             message: "Appointment information is empty"
@@ -190,22 +228,27 @@ exports.update = (req, res) => {
 
     /* User can't change the appointmentID so update this ID in case it needs changing*/
 
-    var myDate = new Date(myDate);
-    let mon = (myDate.getMonth() + 1);
-    mon = mon < 10 ? '0' + mon : mon.toString(); // always return a 2 digit month
-    var dateStr = "" + mon + myDate.getDate() + myDate.getFullYear();
-    var todStr = new String(req.body.tod).replace(/[^0-9+]+/gi, ''); //remove all non numeric characters
-    //should have a 3-4 digit for the time
-    //pad with a leading zero to make it a 4 digit number
-    if (todStr.length < 3 || todStr.length > 4) todStr = '0000';
-    else if (todStr.length == 3) todStr = "0" + todStr;
 
+
+    req.body.date = myDate;
+
+    myDate = new Date(myDate);
+    let mon = myDate.getMonth() + 1;
+    let day = myDate.getDate();
+
+    mon = mon < 10 ? '0' + mon.toString() : mon.toString(); // always return a 2 digit month
+    day = day < 10 ? '0' + day.toString() : day.toString(); // always return a 2 digit day
+
+    var dateStr = "" + mon + day + myDate.getFullYear().toString();
     var cName = new String(req.body.customerName).trim().replace(/\W/, '_');
     //apptID: 2 digit Mon + 2 digit day + 4 digit year + 2 digit Hr + 2 digit Min
-    var newApptID = [dateStr, todStr, cName].join("");
+    var newApptID = [dateStr, time, cName].join("");
+
+    /*standardize new user inputs before updating DB*/
     req.body.apptID = newApptID;
-    req.body.tod = todStr;
+    req.body.tod = time;
     req.body.customerName = cName;
+    //console.log("ID: ", newApptID, "tod: ", time, "name: ", cName);
 
 
     // Find and update product with the request body
@@ -227,12 +270,15 @@ exports.update = (req, res) => {
                 message: "Something wrong updating note with id " + req.params.apptID
             });
         });
-};
+}; //endof exports.update
 
-// Delete an appointment with the specified apptId in the request
+/*** 
+ * Delete an appointment with the specified apptID in the request
+ *      OR if no specific appt was specified then remove all appointments from DB!
+ * */
 exports.delete = (req, res) => {
     console.log("INSIDE DELETE!!!");
-    console.log(req.params)
+    //console.log(req.params)
 
     var query = {};
     // Request validation
@@ -280,4 +326,50 @@ exports.delete = (req, res) => {
                 message: "Could not delete appointment with ID: " + query.apptID
             });
         });
-};
+}; //endof exports.delete
+
+function formatDate(apptObj) {
+
+    var errObj = {
+        rtnCode: 200,
+        message: "",
+        date: "",
+        time: "",
+
+    };
+    var myDate;
+    var time;
+
+    try {
+        let tmpDate = new String(apptObj.date).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        if (!tmpDate)
+            throw "change Date format: MM/DD/YY";
+
+        time = new String(apptObj.tod).replace(/[^0-9+]+/gi, ''); //remove all non numeric characters
+        //should have a 3-4 digit for the time
+        //pad with a leading zero to make it a 4 digit number
+        if (time.length < 3 || time.length > 4) time = '0000';
+        else if (time.length == 3) time = "0" + time;
+
+        let mon = (Number(tmpDate[1])).toString()
+        mon = mon.length == 1 ? "0" + mon : mon;
+        myDate = tmpDate[3] + "-" + mon + "-" + tmpDate[2] + "T" + time.slice(0, 2) + ":" + time.slice(2, 4) + ":00.000Z"; //ISO String format
+        myDate = new Date(myDate);
+        myDate = myDate.toISOString();
+    } catch (err) { //catch invalid date formatting error
+        console.error("Invalid Date: canceling update!", err);
+        errObj.rtnCode = 400;
+        errObj.message = "Date format is invalid, use MM/DD/YYYY";
+        /*return res.status(400).json({
+            message: "Date format is invalid, use MM/DD/YYYY"
+        });
+        */
+    }
+
+    errObj.time = time;
+    errObj.date = myDate;
+
+
+
+    return errObj;
+} //endof formatDate

@@ -1,16 +1,14 @@
-/*  Model/Schema for mongoDB
- *
- *
+/* 
+ *  Model/Schema for mongoDB 
+ *      used by dbs/model/appt.controller.js
  */
 
 var bcrypt = require("bcryptjs");
 var mongoose = require("mongoose");
 var SALT_FACTOR = 10;
 var apptSchema = mongoose.Schema({
-    //username: { type: String, required: true, unique: true },
     username: { type: String, required: true },
     //password: { type: String, required: true },
-    //createdAt: { type: Date, default: Date.now },
     title: String,
     apptID: { type: String, required: true, unique: true },
     date: String,
@@ -20,10 +18,10 @@ var apptSchema = mongoose.Schema({
     displayName: String,
     description: String,
 }, {
-    timestamps: true
+    timestamps: true //will add createdAt and updatedAt keys to our Model
 });
 
-/*
+/* encryption code... add later 
 var noop = function() {};
 apptSchema.pre("save", function(done) {
     console.log("in PRE state")
@@ -51,8 +49,6 @@ apptSchema.methods.name = function() {
     return this.displayName || this.username;
 };
 */
-
-//var connection = mongoose.createConnection('mongodb://localhost:27017/test');
 
 // Make Mongoose use `findOneAndUpdate()` instead of useFindAndModify
 mongoose.set('useFindAndModify', false);

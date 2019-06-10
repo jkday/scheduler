@@ -1,6 +1,15 @@
+/*
+ * Sets the API endpoints for handling appointments in a mongoDB 
+ *      called by public/app.js
+ */
+
+
 var express = require('express');
 var router = express.Router();
 
+/*
+ *API router for handling appointments in a mongoDB 
+ */
 var apptScheduler = require('../dbs/model/appt.controller.js')
 
 // Retrieve a single Appointment with apptID

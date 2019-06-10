@@ -32,7 +32,7 @@ process.on("SIGINT", function() {
 
 });
 
-/*Uncomment this section to run start MongoDB & webapp together... had to disable due to docker issues*/
+/*Uncomment this section to start MongoDB & webapp together... had to disable due to docker issues*/
 
 /*start MongoDB before launching app*/
 /*
@@ -74,7 +74,7 @@ var port = normalizePort(process.env.PORT || '3003');
 app.set('port', port);
 
 /**
- * Create HTTP server.
+ * Create HTTP server and call the Car web app (app.js)
  */
 
 var server = http.createServer(app);

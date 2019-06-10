@@ -1,3 +1,8 @@
+/****
+ * Main app file for Car Appointment Scheduler 
+ *      -called by /bin/www
+ */
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -7,6 +12,7 @@ const bodyParser = require('body-parser');
 var session = require("express-session");
 var mongoose = require("mongoose");
 
+/* Routing modules used for API endpoints */
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var scheduleRouter = require('./routes/scheduler');
@@ -43,7 +49,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 var db = {};
-var connect2DB = function(db, retries) { //try to connect to MongoDB
+var connect2DB = function(db, retries) { //3 attempts to connect to MongoDB
 
     var attempt = retries || 1;
     //    db = mongoose.connect("mongodb://localhost:27017/db", { useNewUrlParser: true }).then(() => {
@@ -72,13 +78,13 @@ connect2DB(db);
 /*** ROUTER Section ****/
 app.get('/', indexRouter);
 app.get('/apptList', function(req, res) {
-
+    //router to display query results
     res.render('apptList', { title: "Appointment Results" });
 
 });
-
 app.all('/users', usersRouter);
-app.all('/scheduler(/*)?', scheduleRouter);
+
+app.all('/scheduler(/*)?', scheduleRouter); //main scheduling router
 
 
 // static file viewer... remove later
